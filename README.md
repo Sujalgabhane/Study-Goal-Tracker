@@ -1,9 +1,9 @@
 Smart Study Planner
 A clean, modern, and responsive single-page application designed to help students organize their study schedules, track academic tasks, and manage their goals effectively. This planner is built with vanilla HTML, CSS (Tailwind), and JavaScript, using the browser's local storage to save all data.
 
-[Live Demo Link Here] <!-- Add your GitHub Pages link here -->
 
-<!-- It's highly recommended to replace the placeholder above with an actual screenshot of your application! -->
+
+
 
 Features
 Add & Manage Tasks: Easily create new study goals with a name, subject, and due date.
