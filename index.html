@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Study Planner</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the application */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .task-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .task-completed {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+        .timeline-bar {
+            position: relative;
+            height: 10px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .timeline-progress {
+            height: 100%;
+            background: linear-gradient(to right, #34d399, #2563eb);
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+        <!-- Header Section -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800">
+                <i class="fas fa-book-reader mr-3 text-blue-500"></i>Smart Study Planner
+            </h1>
+            <p class="text-gray-500 mt-2">Your personal guide to academic success.</p>
+        </header>
+
+        <main>
+            <!-- Task Creation Form -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-700">Add a New Study Goal</h2>
+                <form id="task-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div class="flex flex-col">
+                        <label for="task-name" class="font-medium text-gray-600 mb-1">Task Name</label>
+                        <input type="text" id="task-name" placeholder="e.g., Chapter 5 Reading" class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" required>
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="task-subject" class="font-medium text-gray-600 mb-1">Subject</label>
+                        <input type="text" id="task-subject" placeholder="e.g., History" class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" required>
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="task-due-date" class="font-medium text-gray-600 mb-1">Due Date</label>
+                        <input type="date" id="task-due-date" class="p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors col-span-1 md:col-span-2 lg:col-span-1">
+                        <i class="fas fa-plus-circle mr-2"></i>Add Goal
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Progress and Filters -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+                <h3 class="text-xl font-semibold mb-4">Your Progress</h3>
+                <div id="progress-container" class="mb-4">
+                     <div class="flex justify-between items-center mb-2">
+                        <span id="progress-text" class="font-medium text-gray-600">0% Complete</span>
+                        <span id="task-count" class="text-sm text-gray-500">0/0 Tasks</span>
+                    </div>
+                    <div class="timeline-bar">
+                        <div id="progress-bar" class="timeline-progress" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button data-filter="all" class="filter-btn bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium">All Tasks</button>
+                    <button data-filter="pending" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium">Pending</button>
+                    <button data-filter="completed" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium">Completed</button>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <div id="task-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Tasks will be dynamically inserted here -->
+            </div>
+            <div id="no-tasks-message" class="text-center py-12 hidden">
+                <i class="fas fa-folder-open text-6xl text-gray-300"></i>
+                <p class="mt-4 text-gray-500">No study goals yet. Add one to get started!</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Permission Modal -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm text-center">
+            <h3 class="text-2xl font-bold mb-4">Enable Reminders?</h3>
+            <p class="text-gray-600 mb-6">Allow notifications to get reminders for your upcoming study goals.</p>
+            <div class="flex justify-center gap-4">
+                <button id="allow-notifications" class="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-600">Allow</button>
+                <button id="deny-notifications" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-400">Later</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM element references
+            const taskForm = document.getElementById('task-form');
+            const taskNameInput = document.getElementById('task-name');
+            const taskSubjectInput = document.getElementById('task-subject');
+            const taskDueDateInput = document.getElementById('task-due-date');
+            const taskList = document.getElementById('task-list');
+            const noTasksMessage = document.getElementById('no-tasks-message');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const taskCount = document.getElementById('task-count');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const notificationModal = document.getElementById('notification-modal');
+            const allowNotificationsBtn = document.getElementById('allow-notifications');
+            const denyNotificationsBtn = document.getElementById('deny-notifications');
+
+            // Set min date for date input to today
+            taskDueDateInput.min = new Date().toISOString().split("T")[0];
+
+            // Initialize tasks from local storage
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            let currentFilter = 'all';
+
+            // --- Notification Handling ---
+            const handleNotificationPermission = () => {
+                if ('Notification' in window) {
+                    if (Notification.permission === 'default') {
+                        notificationModal.classList.remove('hidden');
+                    }
+                }
+            };
+
+            allowNotificationsBtn.addEventListener('click', () => {
+                Notification.requestPermission().then(permission => {
+                    notificationModal.classList.add('hidden');
+                });
+            });
+
+            denyNotificationsBtn.addEventListener('click', () => {
+                notificationModal.classList.add('hidden');
+            });
+            
+            const scheduleReminder = (task) => {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    const dueDate = new Date(task.dueDate);
+                    const now = new Date();
+                    // Set reminder for the day of the task at 8 AM
+                    const reminderTime = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate(), 8, 0, 0);
+
+                    const timeUntilReminder = reminderTime.getTime() - now.getTime();
+                    
+                    if (timeUntilReminder > 0) {
+                        setTimeout(() => {
+                            new Notification('Study Reminder!', {
+                                body: `Don't forget: "${task.name}" for ${task.subject} is due today!`,
+                                icon: 'https://img.icons8.com/plasticine/100/book.png'
+                            });
+                        }, timeUntilReminder);
+                    }
+                }
+            };
+
+
+            // --- Core Functions ---
+            const saveTasks = () => {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            };
+            
+            const renderTasks = () => {
+                taskList.innerHTML = '';
+
+                const filteredTasks = tasks.filter(task => {
+                    if (currentFilter === 'completed') return task.completed;
+                    if (currentFilter === 'pending') return !task.completed;
+                    return true;
+                });
+
+                if (filteredTasks.length === 0) {
+                     noTasksMessage.classList.remove('hidden');
+                } else {
+                     noTasksMessage.classList.add('hidden');
+                }
+
+                // Sort tasks by due date
+                filteredTasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+                filteredTasks.forEach(task => {
+                    const taskEl = document.createElement('div');
+                    taskEl.className = 'task-card bg-white p-5 rounded-xl shadow-md flex flex-col';
+                    taskEl.dataset.id = task.id;
+
+                    const dueDate = new Date(task.dueDate + 'T00:00:00'); // Ensure correct date parsing
+                    const isOverdue = !task.completed && new Date() > dueDate;
+
+                    let dateColor = 'text-gray-500';
+                    if (isOverdue) dateColor = 'text-red-500 font-semibold';
+                    
+                    const formattedDate = dueDate.toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
+
+                    taskEl.innerHTML = `
+                        <div class="flex-grow">
+                            <p class="font-semibold text-lg ${task.completed ? 'task-completed' : ''}">${task.name}</p>
+                            <p class="text-sm text-gray-400 mb-3">${task.subject}</p>
+                            <div class="text-sm ${dateColor}">
+                                <i class="fas fa-calendar-alt mr-2"></i>
+                                <span>${formattedDate} ${isOverdue ? '(Overdue)' : ''}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
+                            <button class="complete-btn text-green-500 hover:text-green-600 w-10 h-10 flex items-center justify-center rounded-full hover:bg-green-100 transition-colors">
+                                <i class="fas ${task.completed ? 'fa-undo-alt' : 'fa-check-circle'} text-xl"></i>
+                            </button>
+                            <button class="delete-btn text-red-500 hover:text-red-600 w-10 h-10 flex items-center justify-center rounded-full hover:bg-red-100 transition-colors">
+                                <i class="fas fa-trash-alt text-xl"></i>
+                            </button>
+                        </div>
+                    `;
+                    taskList.appendChild(taskEl);
+                });
+                updateProgress();
+            };
+
+            const updateProgress = () => {
+                const completedTasks = tasks.filter(task => task.completed).length;
+                const totalTasks = tasks.length;
+                const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                
+                progressBar.style.width = `${percentage}%`;
+                progressText.textContent = `${percentage}% Complete`;
+                taskCount.textContent = `${completedTasks}/${totalTasks} Tasks`;
+            };
+
+            const addTask = (name, subject, dueDate) => {
+                const newTask = {
+                    id: Date.now(),
+                    name,
+                    subject,
+                    dueDate,
+                    completed: false
+                };
+                tasks.push(newTask);
+                saveTasks();
+                scheduleReminder(newTask);
+                renderTasks();
+            };
+
+            const toggleTask = (id) => {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    task.completed = !task.completed;
+                    saveTasks();
+                    renderTasks();
+                }
+            };
+
+            const deleteTask = (id) => {
+                tasks = tasks.filter(t => t.id !== id);
+                saveTasks();
+                renderTasks();
+            };
+
+            // --- Event Listeners ---
+            taskForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = taskNameInput.value.trim();
+                const subject = taskSubjectInput.value.trim();
+                const dueDate = taskDueDateInput.value;
+
+                if (name && subject && dueDate) {
+                    addTask(name, subject, dueDate);
+                    taskForm.reset();
+                    taskDueDateInput.min = new Date().toISOString().split("T")[0];
+                }
+            });
+
+            taskList.addEventListener('click', (e) => {
+                const target = e.target;
+                const taskCard = target.closest('.task-card');
+                if (!taskCard) return;
+
+                const taskId = Number(taskCard.dataset.id);
+
+                if (target.closest('.complete-btn')) {
+                    toggleTask(taskId);
+                } else if (target.closest('.delete-btn')) {
+                    deleteTask(taskId);
+                }
+            });
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentFilter = btn.dataset.filter;
+                    
+                    // Update active button style
+                    filterBtns.forEach(b => {
+                        b.classList.remove('bg-blue-500', 'text-white');
+                        b.classList.add('bg-gray-200', 'text-gray-700');
+                    });
+                    btn.classList.add('bg-blue-500', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'text-gray-700');
+
+                    renderTasks();
+                });
+            });
+
+            // --- Initial Load ---
+            handleNotificationPermission();
+            renderTasks();
+        });
+    </script>
+</body>
+</html>
